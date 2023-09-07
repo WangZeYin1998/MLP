@@ -44,8 +44,8 @@ def read_bit(filepath):
     return data
 
 
-train_filepath = "../../../data/ECFP6_train&test/train.csv"
-test_filepath = "../../../data/ECFP6_train&test/test.csv"
+train_filepath = "../../../data/RDKitFP_train&test/train.csv"
+test_filepath = "../../../data/RDKitFP_train&test/test.csv"
 
 'Train_dataset preprogress'
 train_data = read_bit(train_filepath)
@@ -91,7 +91,7 @@ params = {'booster': 'gbtree',
           'tree_method': 'exact'
           }
 watchlist = [(train_dataset, 'train')]
-model = xgb.train(params, train_dataset, num_boost_round=1000, evals=watchlist)
+model = xgb.train(params, train_dataset, num_boost_round=1, evals=watchlist)
 
 print("train finished!")
 model.save_model('xgb_model')
@@ -169,4 +169,4 @@ temp = pd.concat([temp, pd.DataFrame({'Real Value': y_test}),
                 pd.DataFrame({'RMSE': RMSE}),
                 pd.DataFrame({'R2': R2})], axis=1)
 
-temp.to_csv("../../../data/ECFP6_XGBoost_out.csv", encoding='gb18030', index=False)
+temp.to_csv("../../../data/RDKitFP_XGBoost_out.csv", encoding='gb18030', index=False)

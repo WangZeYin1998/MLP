@@ -7,7 +7,6 @@
 @Date    ：2023/9/6 10:18 
 '''
 import csv
-import csv
 from itertools import islice
 
 import pandas as pd
@@ -26,14 +25,7 @@ from torch.optim.lr_scheduler import StepLR
 def bit2attr(bitstr) -> list:
     return list(bitstr)
 
-# 读取位字符串数据
-# 检查行的长度是否为零，如果是则跳过此行。
-# 确定列数，并与预期的 NUM_ATTR 进行比较。
-# 将位字符串转换为特征向量使用 bit2attr 函数，并将其存储在临时变量 temp 中。
-# 将第二个位字符串的特征向量与第一个连接起来，并添加第一列的值（假设为浮点数）到 temp 列表中。
-# 将 temp 添加到 data 列表中。
-# 错误：num_attr == 512，有可能是训练集或测试集中出现的列名'label','molecule_avalonFP','solvent_avalonFP'.
-#NUM_ATTR = 512
+
 def read_bit(filepath):
     data = []
     with open(filepath, 'r') as f:
@@ -43,9 +35,9 @@ def read_bit(filepath):
             if len(row) == 0:
                 continue
             num_attr = len(row[1])
-            assert num_attr == 512
+            assert num_attr == 2048
             num_attr = len(row[2])
-            assert num_attr == 512
+            assert num_attr == 2048
             temp = bit2attr(row[1])
             temp = temp + bit2attr(row[2])
             temp.append(float(row[0]))
@@ -55,8 +47,8 @@ def read_bit(filepath):
     data = pd.DataFrame(data)
     return data
 
-train_filepath = "../../../data/AvalonFP_train&test/train.csv"
-test_filepath = "../../../data/AvalonFP_train&test/test.csv"
+train_filepath = "../../../data/RDKitFP_train&test/train.csv"
+test_filepath = "../../../data/RDKitFP_train&test/test.csv"
 
 '训练集数据处理'
 train_data = read_bit(train_filepath)
@@ -111,7 +103,7 @@ testloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 class Model(nn.Module):
     def __init__(self):
         super(Model, self).__init__()
-        self.layer1 = nn.Linear(1024, 128)
+        self.layer1 = nn.Linear(4096, 128)
         self.layer2 = nn.Linear(128, 64)
         self.layer3 = nn.Linear(64, 12)
         self.layer4 = nn.Linear(12, 1)
@@ -248,5 +240,5 @@ temp = pd.concat([temp, pd.DataFrame({'Real Value': y_test}),
                 pd.DataFrame({'RMSE': RMSE}),
                 pd.DataFrame({'R2': R2})], axis=1)
 
-temp.to_csv("../../../data/AvalonFP_FCNN_out.csv", encoding='gb18030', index=False)
+temp.to_csv("../../../data/RDKitFP_FCNN_out.csv", encoding='gb18030', index=False)
 
