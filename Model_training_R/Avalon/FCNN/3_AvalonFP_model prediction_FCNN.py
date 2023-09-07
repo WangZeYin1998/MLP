@@ -10,16 +10,16 @@ import csv
 import csv
 from itertools import islice
 
+import pandas as pd
 import numpy as np
 import torch.nn
 from sklearn.preprocessing import MinMaxScaler
-from time import sleep
 from sklearn.metrics import mean_squared_error
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader,Dataset
 from torch.optim.lr_scheduler import StepLR
-import pandas as pd
+
 
 # from pylab import *
 
