@@ -138,15 +138,20 @@ criterion = nn.MSELoss()
 # 训练模型
 for epoch in range(200):
 
-    print("epoch = ", epoch)
+
 
     model.train()
-    optimizer.zero_grad()
+
     output = model(x_trains)
     y_trains = torch.tensor(y_trains, dtype=torch.float32)
     loss = criterion(output, y_trains)
+    print("epoch = ", epoch, "loss = ", loss.item())
+    current_lr = optimizer.param_groups[0]['lr']
+    print("current_lr = ", current_lr)
+    optimizer.zero_grad()
     loss.backward()
     optimizer.step()
+
     scheduler.step()  # 在每次迭代后更新学习率
 
     # if (epoch + 1) % 100 == 0:
