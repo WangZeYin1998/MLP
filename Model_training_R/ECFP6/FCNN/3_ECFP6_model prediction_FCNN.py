@@ -76,37 +76,9 @@ test_data_y_df = pd.DataFrame(test_data.iloc[:, -1])
 
 x_test = min_max_scaler_X.transform(test_data_x_df)
 y_test = min_max_scaler_y.transform(test_data_y_df)
-#等待 1 秒
-sleep(1)
+
 
 '(2) MLP模型构建'
-
-#l1 是一个包含512个神经元的全连接层，激活函数为 ReLU。
-#l2 是一个 dropout 层，设置了丢弃率为0.5，用于防止过拟合。
-#l3 是一个包含128个神经元的全连接层，激活函数为 ReLU。
-#l4 是一个包含30个神经元的全连接层，激活函数为 ReLU。
-#l5 是一个包含1个神经元的全连接层。
-#使用 Adam 优化器和 logcosh 损失函数编译模型，并指定了要使用的评估指标为平均绝对误差（MAE）。
-
-# def buildModel():
-#     model = models.Sequential()
-#
-#     l1 = Dense(units=128, activation='relu')
-#     l2 = Dropout(rate=0.3)
-#     l3 = Dense(units=64, activation='relu')
-#     l4 = Dense(units=12, activation='relu')
-#     l5 = Dense(units=1)
-#
-#     layers = [l1, l2, l3, l4, l5]
-#     for layer in layers:
-#         model.add(layer)
-#
-#     adam = Adam(lr=1e-3)
-#     #model.compile(optimizer=adam, loss='logcosh', metrics=['mae'])
-#     model.compile(optimizer=adam, loss='mean_squared_error', metrics=['mae'])
-#     return model
-
-
 
 
 
@@ -131,14 +103,12 @@ class Model(nn.Module):
 model = Model()
 
 
-optimizer = optim.Adam(model.parameters(), lr=1e-3)
+optimizer = optim.SGD(model.parameters(), lr=1e-3)
 scheduler = StepLR(optimizer, step_size=50, gamma=0.1)
 criterion = nn.MSELoss()
 
 # 训练模型
 for epoch in range(200):
-
-
 
     model.train()
 

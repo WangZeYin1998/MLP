@@ -10,6 +10,7 @@ import os
 import pickle
 
 import joblib
+import shap as shap
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor
 from joblib import dump,load
@@ -35,9 +36,9 @@ def read_bit(filepath):
             if len(row) == 0:
                 continue
             num_attr = len(row[1])
-            assert num_attr == 2048
+            assert num_attr == 512
             num_attr = len(row[2])
-            assert num_attr == 2048
+            assert num_attr == 512
             temp = bit2attr(row[1])
             temp = temp + bit2attr(row[2])
             temp.append(float(row[0]))
@@ -64,17 +65,17 @@ def R_Square(true, pred):
         R_squared = 1 - (RSS / TSS)
         return R_squared
 
-train_filepath = "../../../data/ECFP6_train&test/train.csv"
-test_filepath = "../../../data/ECFP6_train&test/test.csv"
+train_filepath = "../../../data/AvalonFP_train&test/train.csv"
+test_filepath = "../../../data/AvalonFP_train&test/test.csv"
 
-if os.path.isfile("../../../data/ECFP6_train&test/x_trains_MinMaxScaler.pkl"):
-    with open('../../../data/ECFP6_train&test/x_trains_MinMaxScaler.pkl', 'rb') as f:
+if os.path.isfile("../../../data/AvalonFP_train&test/x_trains_MinMaxScaler.pkl"):
+    with open('../../../data/AvalonFP_train&test/x_trains_MinMaxScaler.pkl', 'rb') as f:
         x_trains = pickle.load(f)
-    with open('../../../data/ECFP6_train&test/y_trains_MinMaxScaler.pkl', 'rb') as f:
+    with open('../../../data/AvalonFP_train&test/y_trains_MinMaxScaler.pkl', 'rb') as f:
         y_trains = pickle.load(f)
-    with open('../../../data/ECFP6_train&test/x_test_trans.pkl', 'rb') as f:
+    with open('../../../data/AvalonFP_train&test/x_test_trans.pkl', 'rb') as f:
         x_test = pickle.load(f)
-    with open('../../../data/ECFP6_train&test/y_test_trans.pkl', 'rb') as f:
+    with open('../../../data/AvalonFP_train&test/y_test_trans.pkl', 'rb') as f:
         y_test = pickle.load(f)
 
 
@@ -107,18 +108,18 @@ else:
     y_test = min_max_scaler_y.transform(test_data_y_df)
     y_test = y_test.reshape(-1)
 
-    with open('../../../data/ECFP6_train&test/x_trains_MinMaxScaler.pkl', 'wb') as f:
+    with open('../../../data/AvalonFP_train&test/x_trains_MinMaxScaler.pkl', 'wb') as f:
         pickle.dump(x_trains, f)
-    with open('../../../data/ECFP6_train&test/y_trains_MinMaxScaler.pkl', 'wb') as f:
+    with open('../../../data/AvalonFP_train&test/y_trains_MinMaxScaler.pkl', 'wb') as f:
         pickle.dump(y_trains, f)
-    with open('../../../data/ECFP6_train&test/x_test_trans.pkl', 'wb') as f:
+    with open('../../../data/AvalonFP_train&test/x_test_trans.pkl', 'wb') as f:
         pickle.dump(x_test, f)
-    with open('../../../data/ECFP6_train&test/y_test_trans.pkl', 'wb') as f:
+    with open('../../../data/AvalonFP_train&test/y_test_trans.pkl', 'wb') as f:
         pickle.dump(y_test, f)
 
 
-# x_trains = x_trains[0:501]
-# y_trains = y_trains[0:501]
+x_trains = x_trains[0:501]
+y_trains = y_trains[0:501]
 
 
 
@@ -139,6 +140,10 @@ else:
 
     result = rf.predict(x_test)
     result = result.reshape(-1, 1)
+
+explainer = shap.Explainer(rf.fit(x_trains, y_trains))
+shap_values = explainer(x_trains)
+shap.summary_plot(shap_values, x_trains)
 
 # 打印预测结果
 # print(result)
@@ -205,4 +210,4 @@ temp = pd.concat([temp, pd.DataFrame({'Real Value': y_test}),
                 pd.DataFrame({'RMSE': RMSE}),
                 pd.DataFrame({'R2': R2})], axis=1)
 
-temp.to_csv("../../../data/ECFP6_RF_out.csv", encoding='gb18030', index=False)
+temp.to_csv("../../../data/AvalonFP_RF_out.csv", encoding='gb18030', index=False)

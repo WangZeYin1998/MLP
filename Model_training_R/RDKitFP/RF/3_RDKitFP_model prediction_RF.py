@@ -1,4 +1,4 @@
-# -*- coding: UTF-8 -*-
+
 '''
 @Project ：MLP 
 @File    ：3_AvalonFP_model prediction_RF.py
@@ -64,17 +64,17 @@ def R_Square(true, pred):
         R_squared = 1 - (RSS / TSS)
         return R_squared
 
-train_filepath = "../../../data/ECFP6_train&test/train.csv"
-test_filepath = "../../../data/ECFP6_train&test/test.csv"
+train_filepath = "../../../data/RDKitFP_train&test/train.csv"
+test_filepath = "../../../data/RDKitFP_train&test/test.csv"
 
-if os.path.isfile("../../../data/ECFP6_train&test/x_trains_MinMaxScaler.pkl"):
-    with open('../../../data/ECFP6_train&test/x_trains_MinMaxScaler.pkl', 'rb') as f:
+if os.path.isfile("../../../data/RDKitFP_train&test/x_trains_MinMaxScaler.pkl"):
+    with open('../../../data/RDKitFP_train&test/x_trains_MinMaxScaler.pkl', 'rb') as f:
         x_trains = pickle.load(f)
-    with open('../../../data/ECFP6_train&test/y_trains_MinMaxScaler.pkl', 'rb') as f:
+    with open('../../../data/RDKitFP_train&test/y_trains_MinMaxScaler.pkl', 'rb') as f:
         y_trains = pickle.load(f)
-    with open('../../../data/ECFP6_train&test/x_test_trans.pkl', 'rb') as f:
+    with open('../../../data/RDKitFP_train&test/x_test_trans.pkl', 'rb') as f:
         x_test = pickle.load(f)
-    with open('../../../data/ECFP6_train&test/y_test_trans.pkl', 'rb') as f:
+    with open('../../../data/RDKitFP_train&test/y_test_trans.pkl', 'rb') as f:
         y_test = pickle.load(f)
 
 
@@ -107,18 +107,18 @@ else:
     y_test = min_max_scaler_y.transform(test_data_y_df)
     y_test = y_test.reshape(-1)
 
-    with open('../../../data/ECFP6_train&test/x_trains_MinMaxScaler.pkl', 'wb') as f:
+    with open('../../../data/RDKitFP_train&test/x_trains_MinMaxScaler.pkl', 'wb') as f:
         pickle.dump(x_trains, f)
-    with open('../../../data/ECFP6_train&test/y_trains_MinMaxScaler.pkl', 'wb') as f:
+    with open('../../../data/RDKitFP_train&test/y_trains_MinMaxScaler.pkl', 'wb') as f:
         pickle.dump(y_trains, f)
-    with open('../../../data/ECFP6_train&test/x_test_trans.pkl', 'wb') as f:
+    with open('../../../data/RDKitFP_train&test/x_test_trans.pkl', 'wb') as f:
         pickle.dump(x_test, f)
-    with open('../../../data/ECFP6_train&test/y_test_trans.pkl', 'wb') as f:
+    with open('../../../data/RDKitFP_train&test/y_test_trans.pkl', 'wb') as f:
         pickle.dump(y_test, f)
 
 
-# x_trains = x_trains[0:501]
-# y_trains = y_trains[0:501]
+x_trains = x_trains[0:501]
+y_trains = y_trains[0:501]
 
 
 
@@ -205,4 +205,4 @@ temp = pd.concat([temp, pd.DataFrame({'Real Value': y_test}),
                 pd.DataFrame({'RMSE': RMSE}),
                 pd.DataFrame({'R2': R2})], axis=1)
 
-temp.to_csv("../../../data/ECFP6_RF_out.csv", encoding='gb18030', index=False)
+temp.to_csv("../../../data/RDKitFP_RF_out.csv", encoding='gb18030', index=False)
