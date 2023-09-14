@@ -132,8 +132,6 @@ def R_Square(true, pred):
         R_squared = 1 - (RSS / TSS)
         return R_squared
 
-
-
 callback = tf.keras.callbacks.LearningRateScheduler(scheduler, verbose=1)
 model_mlp = buildModel()
 model_mlp.fit(x_trains, y_trains, epochs=200, verbose=1, callbacks=[callback])

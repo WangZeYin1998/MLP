@@ -34,8 +34,8 @@ df[output_col] = df[smiles_col].apply(gen_fingerprint)
 
 # 将 BitVector 转换为字符串并输出为 CSV 文件
 df[output_col] = df[output_col].apply(lambda x: x.ToBitString())
-df.to_csv('data/smiles_ecfp6.csv', index=False)
+df.to_csv('../../data/smiles_ecfp6.csv', index=False)
 
 df1= df.drop(labels=['molecule', 'solvent'],axis=1) #删除含有smiles的两列
-df1.to_csv('data/ECFP6.csv', index=False)
+df1.to_csv('../../data/ECFP6.csv', index=False)
 

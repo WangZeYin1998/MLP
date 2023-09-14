@@ -1,65 +1,84 @@
-import csv
+
+'''
+@Project ：MLP 
+@File    ：3_AvalonFP_model prediction_RF.py
+@IDE     ：PyCharm 
+@Author  ：bruce
+@Date    ：2023/9/12 8:54 
+'''
 import os
 import pickle
-from itertools import islice
 
 import joblib
-import numpy as np
 
-from sklearn.preprocessing import MinMaxScaler
-from time import sleep
-from sklearn.metrics import mean_squared_error
 import torch.nn
 import torch.nn as nn
 import torch.optim as optim
 from torch.optim.lr_scheduler import StepLR
+
 import pandas as pd
+import numpy as np
+import csv
+from itertools import islice
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.metrics import mean_squared_error
 
-# from pylab import *
+from tqdm import tqdm
 
-'(1) 数据预处理'
-
-# 将位字符串转换为列表
-# 如果 bitstr 是 '101010'，那么函数将返回一个包含 ['1', '0', '1', '0', '1', '0'] 的列表。
 def bit2attr(bitstr) -> list:
     return list(bitstr)
 
 
-#NUM_ATTR = 2048
 def read_bit(filepath):
     data = []
     with open(filepath, 'r') as f:
         reader = csv.reader(f)
-        #num_attr = int()
+        # num_attr = int()
         for row in islice(reader, 1, None):  # 不跳过第一行
             if len(row) == 0:
                 continue
             num_attr = len(row[1])
-            assert num_attr == 2048
+            assert num_attr == 167
             num_attr = len(row[2])
-            assert num_attr == 2048
+            assert num_attr == 167
             temp = bit2attr(row[1])
             temp = temp + bit2attr(row[2])
             temp.append(float(row[0]))
             data.append(temp)
 
-#函数将 data 转换为NumPy数组，然后创建一个 DataFrame 对象，并将其返回
     data = np.array(data)
     data = pd.DataFrame(data)
     return data
+# 计算平均绝对误差
+def mean_relative_error(true, pred):
+    return np.sum(np.abs((true - pred) / true))/len(true)
+# 计算绝对误差
+def mean_absolute_error(true, pred):
+    return np.sum(np.abs(true - pred))/len(true)
+# 计算R方
+def R_Square(true, pred):
+    residuals = true - pred
+    TSS = np.sum((true - ture_av)**2)
+    if TSS == 0:
+        # 处理TSS为零的情况
+        return np.nan  # 返回一个特定的值，如NaN
+    else:
+        RSS = np.sum(residuals**2)
+        R_squared = 1 - (RSS / TSS)
+        return R_squared
 
-train_filepath = "../../../data/ECFP6_train&test/train.csv"
-test_filepath = "../../../data/ECFP6_train&test/test.csv"
+train_filepath = "../../../data/MACCSFP_train&test/train.csv"
+test_filepath = "../../../data/MACCSFP_train&test/test.csv"
 
-if os.path.isfile("../../../data/ECFP6_train&test/x_trains_MinMaxScaler.pkl"):
+if os.path.isfile("../../../data/MACCSFP_train&test/x_trains_MinMaxScaler.pkl"):
     print("Processed data!")
-    with open('../../../data/ECFP6_train&test/x_trains_MinMaxScaler.pkl', 'rb') as f:
+    with open('../../../data/MACCSFP_train&test/x_trains_MinMaxScaler.pkl', 'rb') as f:
         x_trains = pickle.load(f)
-    with open('../../../data/ECFP6_train&test/y_trains_MinMaxScaler.pkl', 'rb') as f:
+    with open('../../../data/MACCSFP_train&test/y_trains_MinMaxScaler.pkl', 'rb') as f:
         y_trains = pickle.load(f)
-    with open('../../../data/ECFP6_train&test/x_test_trans.pkl', 'rb') as f:
+    with open('../../../data/MACCSFP_train&test/x_test_trans.pkl', 'rb') as f:
         x_test = pickle.load(f)
-    with open('../../../data/ECFP6_train&test/y_test_trans.pkl', 'rb') as f:
+    with open('../../../data/MACCSFP_train&test/y_test_trans.pkl', 'rb') as f:
         y_test = pickle.load(f)
     if os.path.isfile("scaler_X") and os.path.isfile("scaler_y"):
         print("scaler files exist!")
@@ -101,6 +120,8 @@ if os.path.isfile("../../../data/ECFP6_train&test/x_trains_MinMaxScaler.pkl"):
         # y_test = y_test.reshape(-1)
         joblib.dump(min_max_scaler_X, "scaler_x")
         joblib.dump(min_max_scaler_y, "scaler_y")
+
+
 else:
     print("Unprocessed data！")
     train_data = read_bit(train_filepath)
@@ -132,26 +153,25 @@ else:
     joblib.dump(min_max_scaler_X, "scaler_x")
     joblib.dump(min_max_scaler_y, "scaler_y")
 
-    with open('../../../data/ECFP6_train&test/x_trains_MinMaxScaler.pkl', 'wb') as f:
+    with open('../../../data/MACCSFP_train&test/x_trains_MinMaxScaler.pkl', 'wb') as f:
         pickle.dump(x_trains, f)
-    with open('../../../data/ECFP6_train&test/y_trains_MinMaxScaler.pkl', 'wb') as f:
+    with open('../../../data/MACCSFP_train&test/y_trains_MinMaxScaler.pkl', 'wb') as f:
         pickle.dump(y_trains, f)
-    with open('../../../data/ECFP6_train&test/x_test_trans.pkl', 'wb') as f:
+    with open('../../../data/MACCSFP_train&test/x_test_trans.pkl', 'wb') as f:
         pickle.dump(x_test, f)
-    with open('../../../data/ECFP6_train&test/y_test_trans.pkl', 'wb') as f:
+    with open('../../../data/MACCSFP_train&test/y_test_trans.pkl', 'wb') as f:
         pickle.dump(y_test, f)
 
 
-
-
+# x_trains = x_trains[0:501]
+# y_trains = y_trains[0:501]
 class Model(nn.Module):
     def __init__(self):
         super(Model, self).__init__()
-        self.layer1 = nn.Linear(4096, 1024)
-        self.layer2 = nn.Linear(1024, 128)
-        self.layer3 = nn.Linear(128, 64)
-        self.layer4 = nn.Linear(64, 12)
-        self.layer5 = nn.Linear(12, 1)
+        self.layer1 = nn.Linear(334, 128)
+        self.layer2 = nn.Linear(128, 64)
+        self.layer3 = nn.Linear(64, 12)
+        self.layer4 = nn.Linear(12, 1)
 
     def forward(self, x):
         x = torch.from_numpy(x).float()
@@ -160,20 +180,16 @@ class Model(nn.Module):
         x = nn.Dropout(0.3)(x)
         x = torch.relu(self.layer2(x))
         x = torch.relu(self.layer3(x))
-        x = torch.relu(self.layer4(x))
-        x = self.layer5(x)
+        x = self.layer4(x)
         return x
 
 model = Model()
 
 
-optimizer = optim.Adam(model.parameters(), lr=0.001)
+optimizer = optim.Adam(model.parameters(), lr=1e-3)
 scheduler = StepLR(optimizer, step_size=100, gamma=0.1)
 criterion = nn.MSELoss()
 
-y_trains = torch.tensor(y_trains, dtype=torch.float32)
-y_trains = y_trains.view(-1, 1)
-# 训练模型
 
 'model training'
 if os.path.isfile("train_model_para.pt"):
@@ -207,47 +223,15 @@ else:
     result = model(x_test)
 
 
+# 使用 MinMaxScaler 进行归一化
 
-#学习率调度函数scheduler(epoch, lr)。
-#该函数用于自定义学习率的调整规则。在每个 epoch 的开头，调度函数将当前的 epoch 数和当前的学习率作为参数传入。
-#调度函数的逻辑是，如果当前 epoch 大于0且可以被500整除，将学习率乘以0.1，否则保持不变。
-#调度函数返回调整后的学习率，从而实现了学习率的动态调整策略。
-# def scheduler(epoch, learning_rate):
-#     if epoch > 0 and epoch % 50 == 0:
-#         return learning_rate * 0.1
-#     else:
-#         return learning_rate
 
-'(3)模型训练'
-
-# 计算平均绝对误差
-def mean_relative_error(true, pred):
-    return np.sum(np.abs((true - pred) / true))/len(true)
-# 计算绝对误差
-def mean_absolute_error(true, pred):
-    return np.sum(np.abs(true - pred))/len(true)
-# 计算R方
-def R_Square(true, pred):
-    residuals = true - pred
-    TSS = np.sum((true - ture_av)**2)
-    if TSS == 0:
-        # 处理TSS为零的情况
-        return np.nan  # 返回一个特定的值，如NaN
-    else:
-        RSS = np.sum(residuals**2)
-        R_squared = 1 - (RSS / TSS)
-        return R_squared
-
-# callback = tf.keras.callbacks.LearningRateScheduler(scheduler, verbose=1)
-# model_mlp = buildModel()
-# model_mlp.fit(x_trains, y_trains, epochs=200, verbose=1, callbacks=[callback])
-#
-#  # 外部验证
-# result = model_mlp.predict(x_test)
-
+x_test = min_max_scaler_X.transform(test_data_x_df)
+y_test = min_max_scaler_y.transform(test_data_y_df)
 y_test = np.reshape(y_test, (-1, 1))
 y_test = min_max_scaler_y.inverse_transform(y_test)
 result = result.reshape(-1, 1)
+
 # result = min_max_scaler_y.inverse_transform(result) #此处不适用pytorch
 result = min_max_scaler_y.inverse_transform(result.detach().numpy())
 
@@ -286,4 +270,5 @@ temp = pd.concat([temp, pd.DataFrame({'Real Value': y_test}),
                 pd.DataFrame({'RMSE': RMSE}),
                 pd.DataFrame({'R2': R2})], axis=1)
 
-temp.to_csv("../../../data/ECFP6_FCNN_out.csv", encoding='gb18030', index=False)
+temp.to_csv("../../../data/MACCSFP_FCNN_out.csv", encoding='gb18030', index=False)
+
